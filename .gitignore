@@ -1,0 +1,4 @@
+*.pyc
+Mopidy_rfid.egg-info
+.project
+.pydevproject
