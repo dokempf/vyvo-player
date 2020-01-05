@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 def get_version(filename):
     content = open(filename).read()
-    return re.search("__version__ = \"([^\"]+)\"", content).group(1)
+    return re.search('__version__ = "([^"]+)"', content).group(1)
 
 
 setup(

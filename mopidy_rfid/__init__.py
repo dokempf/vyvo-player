@@ -1,6 +1,7 @@
 import os
 from mopidy import config, ext
 
+from mopidy_rfid.command import DispatchCommand
 from mopidy_rfid.frontend import RFIDFrontend
 
 
@@ -23,7 +24,7 @@ class Extension(ext.Extension):
         return schema
 
     def get_command(self):
-        pass
+        return DispatchCommand()
 
     def setup(self, registry):
         registry.add("frontend", RFIDFrontend)
