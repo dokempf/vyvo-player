@@ -1,9 +1,9 @@
 import os
 from mopidy import config, ext
 
+from mopidy_rfid.apps import app_factory
 from mopidy_rfid.command import DispatchCommand
 from mopidy_rfid.frontend import RFIDFrontend
-
 
 # This is the unique location of this version string throughout the code
 __version__ = "0.1"
@@ -28,3 +28,5 @@ class Extension(ext.Extension):
 
     def setup(self, registry):
         registry.add("frontend", RFIDFrontend)
+
+        registry.add("http:app", {"name": self.ext_name, "factory": app_factory,})
