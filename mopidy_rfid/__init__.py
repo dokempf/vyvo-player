@@ -20,7 +20,7 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
-        schema["device"] = config.String(choices=["diskmock",])
+        schema["device"] = config.String(choices=["diskmock"])
         return schema
 
     def get_command(self):
@@ -29,4 +29,4 @@ class Extension(ext.Extension):
     def setup(self, registry):
         registry.add("frontend", RFIDFrontend)
 
-        registry.add("http:app", {"name": self.ext_name, "factory": app_factory,})
+        registry.add("http:app", {"name": self.ext_name, "factory": app_factory})

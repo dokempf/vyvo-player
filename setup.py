@@ -13,5 +13,5 @@ setup(
     author="Dominic Kempf",
     author_email="dominic.r.kempf@gmail.com",
     packages=find_packages(),
-    entry_points={"mopidy.ext": ["rfid = mopidy_rfid:Extension",],},
+    entry_points={"mopidy.ext": ["rfid = mopidy_rfid:Extension"]},
 )
