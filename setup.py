@@ -14,4 +14,5 @@ setup(
     author_email="dominic.r.kempf@gmail.com",
     packages=find_packages(),
     entry_points={"mopidy.ext": ["rfid = mopidy_rfid:Extension"]},
+    install_requires=["Mopidy >= 3.0", "Pykka", "tornado", "pi-rc522"],
 )

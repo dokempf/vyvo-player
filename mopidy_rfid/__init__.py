@@ -20,7 +20,7 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
-        schema["device"] = config.String(choices=["diskmock"])
+        schema["device"] = config.String(choices=["diskmock", "rc522"])
         return schema
 
     def get_command(self):
