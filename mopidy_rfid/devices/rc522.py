@@ -26,16 +26,18 @@ def err_handle(ret):
 class RC522Device(RFIDDeviceBase):
     def __init__(self, config):
         self.reader = RFID()
-        self.util = self.reader.util()
 
     def read(self):
         # Send a request to the RFID Reader
         self.reader.init()
-        tag_type = err_handle(self.reader.request())
+        error, tag_type = self.reader.request()
 
         # If we did not encounter a tag, do nothing
         if tag_type is None:
             return None
+
+        if error:
+            raise MopidyRFIDError("Found RFID tag, but still produced an error")
 
         uid = err_handle(self.reader.anticoll())
         err_handle(self.reader.select_tag(uid))
