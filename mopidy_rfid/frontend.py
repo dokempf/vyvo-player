@@ -56,7 +56,6 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         self.poller.tell(None)
 
         # Maybe resume playback where we have left off
-        #         track = self.core.playback.get_current_track().get()
         try:
             pos, stamp = self.resume_dict[tl_track.track.uri]
             self.core.playback.seek(pos)
