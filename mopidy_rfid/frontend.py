@@ -2,8 +2,8 @@ import pykka
 import time
 
 from mopidy import core
-
 from mopidy_rfid.devices import select_device
+from pytools.persistent_dict import PersistentDict, NoSuchEntryError
 
 
 class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
@@ -13,6 +13,14 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         self.new_uri_arrived = False
         self.poller = RFIDPollingActor.start(self.actor_ref, config)
 
+        # A disk-backed dictionary that we use to store time positions
+        # that can later be used to resume playback, if our resume policy
+        # requires it. We store key value pairs of the following form:
+        # track.uri -> (time in ms, time stamp of playback)
+        self.resume_dict = PersistentDict(
+            "resume_data", container_dir=config["core"]["data_dir"]
+        )
+
     def on_start(self):
         # This kicks of the recursive polling of the polling actor
         self.poller.tell(None)
@@ -21,6 +29,16 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         self.poller.stop()
 
     def on_receive(self, uri):
+        # Extract the following information for our resume policy:
+        # * Current track (identified through the URI)
+        # * Time position within track
+        # * Time stamp of now to apply resume policies
+        if uri is None:
+            track = self.core.playback.get_current_track().get()
+            pos = self.core.playback.get_time_position().get()
+            stamp = None
+            self.resume_dict[track.uri] = (pos, stamp)
+
         # Start playback of a new URI by clearing the tracklist,
         # adding the URI and playing it. The clearing part is radical
         # but a design decision of this extension. Note that as a
@@ -36,6 +54,14 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         # which can produce some sorts of ill-formed states.
         self.new_uri_arrived = False
         self.poller.tell(None)
+
+        # Maybe resume playback where we have left off
+        #         track = self.core.playback.get_current_track().get()
+        try:
+            pos, stamp = self.resume_dict[tl_track.track.uri]
+            self.core.playback.seek(pos)
+        except NoSuchEntryError:
+            pass
 
 
 class RFIDPollingActor(pykka.ThreadingActor):

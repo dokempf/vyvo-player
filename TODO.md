@@ -14,9 +14,12 @@
 
 # Features
 
-- ResumePolicy with PersistentDict
-  - Was fuer Daten kann man bei PLaylists heranziehen. tracks sind denke ich einfach.
-- Configuration for RC522 (antennaGain, GPIO pins)
+- ResumePolicy with PersistentDict fehlt noch
+  - Playlist resuming
+  - time stamps
+  - Policies
+  - Bei erfolgreichem Beenden eines Tracks resume daten loeschen
+- Configuration for RC522 GPIO pins
 
 # Devices
 
