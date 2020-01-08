@@ -32,6 +32,9 @@ class RC522Device(RFIDDeviceBase):
     def __init__(self, config):
         self.reader = RFID()
 
+        # Set the antenna fain factor, init() will bring this to the chip
+        self.reader.antenna_gain = config["rfid"]["antenna_gain"]
+
     def read(self):
         # Send a request to the RFID Reader
         self.reader.init()
