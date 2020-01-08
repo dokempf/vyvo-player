@@ -2,7 +2,6 @@
 
 - Write collision with Playback
   - Potentielle Loesung muss man die Devices in das Actor System einbinden? -> Message serialization
-- Catch too long URIs
 
 # QA stuff
 
@@ -18,7 +17,6 @@
 - ResumePolicy with PersistentDict
   - Was fuer Daten kann man bei PLaylists heranziehen. tracks sind denke ich einfach.
 - Configuration for RC522 (antennaGain, GPIO pins)
-- Konfigurierbares Pollinginterval
 
 # Devices
 

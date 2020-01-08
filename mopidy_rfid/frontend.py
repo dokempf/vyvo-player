@@ -42,6 +42,7 @@ class RFIDPollingActor(pykka.ThreadingActor):
     def __init__(self, parent, config):
         super(RFIDPollingActor, self).__init__()
         self.parent = parent
+        self.interval = config["rfid"]["polling_interval"] / 1000
         self.device = select_device(config)
         self.current_uri = None
 
@@ -67,5 +68,5 @@ class RFIDPollingActor(pykka.ThreadingActor):
         # This actor should recursively trigger itself in all cases
         # except the one where we found new media, in which case the
         # frontend will retrigger polling after playback started.
-        time.sleep(1)
+        time.sleep(self.interval)
         self.actor_ref.tell(message)

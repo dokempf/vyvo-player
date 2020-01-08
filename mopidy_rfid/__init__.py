@@ -21,6 +21,7 @@ class Extension(ext.Extension):
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
         schema["device"] = config.String(choices=["diskmock", "rc522"])
+        schema["polling_interval"] = config.Integer(minimum=100)
         return schema
 
     def get_command(self):
