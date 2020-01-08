@@ -55,7 +55,7 @@ class RFIDPollingActor(pykka.ThreadingActor):
         if uri is None and uri != self.current_uri:
             uri = self.device.read()
 
-	# If the URI changed, the frontend should start or stop playback
+        # If the URI changed, the frontend should start or stop playback
         if uri != self.current_uri:
             self.current_uri = uri
             self.parent.tell(uri)
@@ -64,7 +64,7 @@ class RFIDPollingActor(pykka.ThreadingActor):
             if uri is not None:
                 return
 
-	# This actor should recursively trigger itself in all cases
+        # This actor should recursively trigger itself in all cases
         # except the one where we found new media, in which case the
         # frontend will retrigger polling after playback started.
         time.sleep(1)
