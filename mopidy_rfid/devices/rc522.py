@@ -103,7 +103,7 @@ class RC522Device(RFIDDeviceBase):
         data = bytes(uri, encoding="utf-8")
         size = len(data)
 
-        # Check for the size of the URI and compare against the MIFARE1k data limit
+        # Check for the size of the URI and compare against the MIFARE1k data limit.
         # Note that this is the 'lazy' limit which does not go through the hassle
         # of leveraging available data bytes in sector trailers.
         if size > 751:

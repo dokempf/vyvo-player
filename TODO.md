@@ -16,10 +16,9 @@
 
 - ResumePolicy with PersistentDict fehlt noch
   - Playlist resuming
-  - time stamps
-  - Policies
-  - Bei erfolgreichem Beenden eines Tracks resume daten loeschen
+  - Hat man korrekte Systemtime?
 - Configuration for RC522 GPIO pins
+
 
 # Devices
 
