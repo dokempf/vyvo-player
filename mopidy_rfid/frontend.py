@@ -60,9 +60,15 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         try:
             track, pos, stamp = self.resume_dict[self.user_uri]
             delta = datetime.utcnow() - stamp
-            del self.resume_dict[self.user_uri]
             if delta < self.resume_threshold:
+                # Skip to the correct track
+                if self.core.playback.get_current_track().get() != track:
+                    self.core.tracklist.remove({"tlid": [tl_track.tlid]})
+                    return
+
+                # Seek to correct position
                 self.core.playback.seek(pos)
+                del self.resume_dict[self.user_uri]
         except NoSuchEntryError:
             pass
 

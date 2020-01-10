@@ -16,6 +16,7 @@
 
 - ResumePolicy with PersistentDict fehlt noch
   - Playlist resuming
+  - Check for live Stream
   - Hat man korrekte Systemtime?
 - Configuration for RC522 GPIO pins
 
