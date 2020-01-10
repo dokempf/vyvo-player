@@ -16,7 +16,7 @@ class Extension(ext.Extension):
         return config.read(conf_file)
 
     def get_config_schema(self):
-        from mopidy_rfid.config import Timedelta
+        from mopidy_rfid.schema import Timedelta
 
         schema = super(Extension, self).get_config_schema()
         schema["device"] = config.String(choices=["diskmock", "rc522"])
