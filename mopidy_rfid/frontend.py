@@ -26,7 +26,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         )
 
         # The timedelta object to decide whether we want to use resume data
-        self.resume_threshold = config["resume_threshold"]
+        self.resume_threshold = config["rfid"]["resume_threshold"]
 
     def on_start(self):
         # This kicks of the recursive polling of the polling actor
