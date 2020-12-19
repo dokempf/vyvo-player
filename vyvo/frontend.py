@@ -3,7 +3,7 @@ import time
 
 from datetime import datetime, timedelta
 from mopidy import core
-from mopidy_rfid.devices import select_device
+from vyvo.devices import select_device
 from pytools.persistent_dict import PersistentDict, NoSuchEntryError
 from os.path import join
 
@@ -19,7 +19,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         # that can later be used to resume playback, if our resume policy
         # requires it. We store key value pairs of the following form:
         # track.uri -> (time in ms, time stamp of playback)
-        from mopidy_rfid import Extension
+        from vyvo import Extension
 
         self.resume_dict = PersistentDict(
             "resume_data", container_dir=join(Extension.get_data_dir(config), "resume")

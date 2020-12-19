@@ -7,8 +7,8 @@ __version__ = "0.1"
 
 
 class Extension(ext.Extension):
-    dist_name = "Mopidy-rfid"
-    ext_name = "rfid"
+    dist_name = "Vyvo-Player"
+    ext_name = "vyvo"
     version = __version__
 
     def get_default_config(self):
@@ -31,7 +31,7 @@ class Extension(ext.Extension):
         return DispatchCommand()
 
     def setup(self, registry):
-        from mopidy_rfid.frontend import RFIDFrontend
+        from vyvo.frontend import RFIDFrontend
 
         registry.add("frontend", RFIDFrontend)
 

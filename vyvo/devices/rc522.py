@@ -1,4 +1,4 @@
-from mopidy_rfid.devices import RFIDDeviceBase, MopidyRFIDError
+from vyvo.devices import RFIDDeviceBase, MopidyRFIDError
 
 from pirc522 import RFID
 

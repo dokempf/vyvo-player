@@ -1,4 +1,4 @@
-from mopidy_rfid.devices import RFIDDeviceBase
+from vyvo.devices import RFIDDeviceBase
 
 import os
 

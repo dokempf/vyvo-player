@@ -1,5 +1,5 @@
 from tornado.web import RequestHandler
-from mopidy_rfid.devices import select_device
+from vyvo.devices import select_device
 
 import json
 

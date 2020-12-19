@@ -1,6 +1,6 @@
 from mopidy import commands
 
-from mopidy_rfid.devices import select_device
+from vyvo.devices import select_device
 
 
 class DispatchCommand(commands.Command):
