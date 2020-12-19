@@ -8,12 +8,12 @@ def get_version(filename):
 
 
 setup(
-    name="Mopidy-rfid",
-    version=get_version("mopidy_rfid/__init__.py"),
+    name="Vyvo-Player",
+    version=get_version("vyvo/__init__.py"),
     author="Dominic Kempf",
     author_email="dominic.r.kempf@gmail.com",
     packages=find_packages(),
-    entry_points={"mopidy.ext": ["rfid = mopidy_rfid:Extension"]},
+    entry_points={"mopidy.ext": ["vyvo = vyvo:Extension"]},
     install_requires=[
         "Mopidy >= 3.0",
         "Pykka",
