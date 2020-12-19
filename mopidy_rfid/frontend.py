@@ -36,24 +36,28 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         self.poller.stop()
 
     def on_receive(self, uri):
-        # Extract the following information for our resume policy:
-        # * Current track (identified through the URI)
-        # * Time position within track
-        # * Time stamp of now to apply resume policies
+        # If the URI is None, we have requested a stop of playback
         if uri is None:
+            # Extract the following information for our resume policy:
+            # * Current track (identified through the URI)
+            # * Time position within track
+            # * Time stamp of now to apply resume policies
             track = self.core.playback.get_current_track().get()
-            pos = self.core.playback.get_time_position().get()
-            stamp = datetime.utcnow()
-            self.resume_dict[self.user_uri] = (track, pos, stamp)
+            if track is not None:
+                pos = self.core.playback.get_time_position().get()
+                stamp = datetime.utcnow()
+                self.resume_dict[self.user_uri] = (track, pos, stamp)
 
-        # Start playback of a new URI by clearing the tracklist,
-        # adding the URI and playing it. The clearing part is radical
-        # but a design decision of this extension. Note that as a
-        # side effect, passing uri=None will stop playback.
-        self.user_uri = uri
-        self.core.tracklist.clear()
-        self.core.tracklist.add(uris=[uri])
-        self.core.playback.play()
+            # Stop playback radically by erasing the tracklist
+            self.core.tracklist.clear()
+        else:
+            # Start playback of a new URI by clearing the tracklist,
+            # adding the URI and playing it. The clearing part is radical
+            # but a design decision of this extension.
+            self.user_uri = uri
+            self.core.tracklist.clear()
+            self.core.tracklist.add(uris=[uri])
+            self.core.playback.play()
 
     def track_playback_started(self, tl_track):
         # Maybe resume playback where we have left off
@@ -61,8 +65,11 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
             track, pos, stamp = self.resume_dict[self.user_uri]
             delta = datetime.utcnow() - stamp
             if delta < self.resume_threshold:
+                def debug(x):
+                    print("comparing {} vs {} == {}".format(x.uri, track.uri, x.uri == track.uri))
+                    
                 # Skip to the correct track
-                if self.core.playback.get_current_track().get() != track:
+                if debug(self.core.playback.get_current_track().get()) != track:
                     self.core.tracklist.remove({"tlid": [tl_track.tlid]})
                     return
 
@@ -71,9 +78,6 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
                 del self.resume_dict[self.user_uri]
         except NoSuchEntryError:
             pass
-
-        # Restart polling on the polling actor
-        self.poller.tell(None)
 
 
 class RFIDPollingActor(pykka.ThreadingActor):
@@ -97,11 +101,7 @@ class RFIDPollingActor(pykka.ThreadingActor):
         # If the URI changed, the frontend should start or stop playback
         if uri != self.current_uri:
             self.current_uri = uri
-            self.parent.tell(uri)
-
-            # If we started playback, we should stop polling, see below
-            if uri is not None:
-                return
+            self.parent.ask(uri)
 
         # This actor should recursively trigger itself in all cases
         # except the one where we found new media, in which case the
