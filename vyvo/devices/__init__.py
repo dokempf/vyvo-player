@@ -13,12 +13,13 @@ class RFIDDeviceBase:
         raise NotImplementedError
 
 
-class DeviceActor(pykka.ThreadingActor)
+class DeviceActor(pykka.ThreadingActor):
     """ This actor manages access to the physical device. By only using the
     device through this actor, it is guaranteed that there is no conflict at
     the device level, although different parts of the project access the device.
     """
     def __init__(self, config):
+        super(DeviceActor, self).__init__()
         self.device = None
 
         if config["vyvo"]["device"] == "diskmock":

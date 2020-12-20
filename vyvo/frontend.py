@@ -81,7 +81,7 @@ class RFIDPollingActor(pykka.ThreadingActor):
         super(RFIDPollingActor, self).__init__()
         self.parent = parent
         self.interval = config["vyvo"]["polling_interval"] / 1000
-        self.device = DeviceActor(config)
+        self.device = DeviceActor.start(config)
         self.current_uri = None
 
     def on_receive(self, message):
@@ -108,3 +108,6 @@ class RFIDPollingActor(pykka.ThreadingActor):
         # frontend will retrigger polling after playback started.
         time.sleep(self.interval)
         self.actor_ref.tell(message)
+
+    def on_stop(self):
+        self.device.stop()
