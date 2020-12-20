@@ -1,3 +1,6 @@
+import pykka
+
+
 class MopidyRFIDError(Exception):
     pass
 
@@ -10,17 +13,30 @@ class RFIDDeviceBase:
         raise NotImplementedError
 
 
-def select_device(config):
-    device = config["rfid"]["device"]
+class DeviceActor(pykka.ThreadingActor):
+    """ This actor manages access to the physical device. By only using the
+    device through this actor, it is guaranteed that there is no conflict at
+    the device level, although different parts of the project access the device.
+    """
+    def __init__(self, config):
+        super(DeviceActor, self).__init__()
+        self.device = None
 
-    if device == "diskmock":
-        from mopidy_rfid.devices.diskmock import DiskMockDevice
+        if config["vyvo"]["device"] == "diskmock":
+            from vyvo.devices.diskmock import DiskMockDevice
+            self.device = DiskMockDevice(config)
 
-        return DiskMockDevice(config)
+        if config["vyvo"]["device"] == "rc522":
+            from vyvo.devices.rc522 import RC522Device
+            self.device = RC522Device(config)
 
-    if device == "rc522":
-        from mopidy_rfid.devices.rc522 import RC522Device
+        if self.device is None:
+            raise NotImplementedError("Device {} not known".format(config["vyvo"]["device"]))
 
-        return RC522Device(config)
-
-    raise NotImplementedError("Device {} not known".format(device))
+    def on_receive(self, message):
+        if message == "read":
+            return self.device.read()
+        elif message.startswith("write:"):
+            self.device.write(message[7:])
+        else:
+            raise ValueError("DeviceActor expects 'read' or 'write:<uri>' as message!")

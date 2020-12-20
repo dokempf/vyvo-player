@@ -1,6 +1,6 @@
 from mopidy import commands
 
-from vyvo.devices import select_device
+from vyvo.devices import DeviceActor
 
 
 class DispatchCommand(commands.Command):
@@ -12,8 +12,8 @@ class DispatchCommand(commands.Command):
 
 class ReadCommand(commands.Command):
     def run(self, args, config):
-        device = select_device(config)
-        uri = device.read()
+        device = DeviceActor(config)
+        uri = device.ask("read")
         if uri is None:
             print("No URI stored on RFID tag!")
         else:
@@ -27,6 +27,6 @@ class WriteCommand(commands.Command):
         self.add_argument("uri")
 
     def run(self, args, config):
-        device = select_device(config)
-        device.write(args.uri)
+        device = DeviceActor(config)
+        device.ask("write:{}".format(args.uri))
         return 0
