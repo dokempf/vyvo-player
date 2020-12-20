@@ -3,7 +3,7 @@ import time
 
 from datetime import datetime, timedelta
 from mopidy import core
-from vyvo.devices import select_device
+from vyvo.devices import DeviceActor
 from pytools.persistent_dict import PersistentDict, NoSuchEntryError
 from os.path import join
 
@@ -26,7 +26,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         )
 
         # The timedelta object to decide whether we want to use resume data
-        self.resume_threshold = config["rfid"]["resume_threshold"]
+        self.resume_threshold = config["vyvo"]["resume_threshold"]
 
     def on_start(self):
         # This kicks of the recursive polling of the polling actor
@@ -80,19 +80,19 @@ class RFIDPollingActor(pykka.ThreadingActor):
     def __init__(self, parent, config):
         super(RFIDPollingActor, self).__init__()
         self.parent = parent
-        self.interval = config["rfid"]["polling_interval"] / 1000
-        self.device = select_device(config)
+        self.interval = config["vyvo"]["polling_interval"] / 1000
+        self.device = DeviceActor(config)
         self.current_uri = None
 
     def on_receive(self, message):
         # Read URI from device - None means no tag is present
-        uri = self.device.read()
+        uri = self.device.ask("read")
 
         # If no tag was found, we should double check. At least the
         # RC522 produces false negatives once in a while, which result
         # in unwanted restarts of playback
         if uri is None and uri != self.current_uri:
-            uri = self.device.read()
+            uri = self.device.ask("read")
 
         # If the URI changed, the frontend should start or stop playback
         if uri != self.current_uri:

@@ -16,7 +16,7 @@ class Extension(ext.Extension):
         return config.read(conf_file)
 
     def get_config_schema(self):
-        from mopidy_rfid.schema import Timedelta
+        from vyvo.schema import Timedelta
 
         schema = super(Extension, self).get_config_schema()
         schema["device"] = config.String(choices=["diskmock", "rc522"])
@@ -26,7 +26,7 @@ class Extension(ext.Extension):
         return schema
 
     def get_command(self):
-        from mopidy_rfid.command import DispatchCommand
+        from vyvo.command import DispatchCommand
 
         return DispatchCommand()
 
@@ -35,6 +35,5 @@ class Extension(ext.Extension):
 
         registry.add("frontend", RFIDFrontend)
 
-        from mopidy_rfid.apps import app_factory
-
-        registry.add("http:app", {"name": self.ext_name, "factory": app_factory})
+        # from mopidy_rfid.apps import app_factory
+        # registry.add("http:app", {"name": self.ext_name, "factory": app_factory})
