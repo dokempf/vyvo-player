@@ -1,8 +1,6 @@
 {# This script is a mixture of regular bash with the Jinja2 templating language! -#}
-#!/bin/bash
-
-# Abort this script on the first failure
-set -e
+{# It is automatically split at each reboot command and a restart procedure after #}
+{# the reboot is added. This also adds the shebang - there is no need for one here#}
 
 # Add the apt.mopidy.com repository
 wget -q -O - https://apt.mopidy.com/mopidy.gpg | apt-key add -
