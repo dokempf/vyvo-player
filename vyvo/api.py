@@ -1,10 +1,11 @@
 from tornado.web import RequestHandler
-from vyvo.devices import select_device
+from vyvo.devices import DeviceActor
 
 import json
+import pykka
 
 
-def app_factory(config, core):
+def api_factory(config, core):
     return [
         ("/read/", ReadRequestHandler, {"config": config}),
         ("/write/", WriteRequestHandler, {"config": config}),
@@ -13,16 +14,16 @@ def app_factory(config, core):
 
 class ReadRequestHandler(RequestHandler):
     def initialize(self, config):
-        self.device = select_device(config)
+        self.device = pykka.ActorRegistry.get_by_class(DeviceActor)[0]
 
     def get(self):
         self.set_header("Content-type", "application/json")
-        self.write(json.dumps(self.device.read()))
+        self.write(json.dumps({"uri": self.device.ask("read")}))
 
 
 class WriteRequestHandler(RequestHandler):
     def initialize(self, config):
-        self.device = select_device(config)
+        self.device = pykka.ActorRegistry.get_by_class(DeviceActor)[0]
 
     def post(self):
-        self.device.write(self.get_argument("uri"))
+        self.device.ask("write:{}".format(self.get_argument("uri")))

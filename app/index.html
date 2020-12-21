@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="js/jquery-3.5.1.js"></script>
+<script type="text/JavaScript">
+$(document).ready(function(){
+    // This handles the Read button
+    $("#read").click(function(){
+        $.getJSON('/vyvo_api/read/', function(data) {
+            $('#uri').html("The current URI is: <b>" + data['uri'] + "</b>");
+        })    
+    })
+})
+</script>
+</head>
+<body>
+<button id="read">Read!</button>
+<p id="uri"><it>No URI read yet!</it></p>
+</body>
+</html>

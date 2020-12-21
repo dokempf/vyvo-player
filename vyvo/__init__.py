@@ -35,5 +35,15 @@ class Extension(ext.Extension):
 
         registry.add("frontend", RFIDFrontend)
 
-        # from mopidy_rfid.apps import app_factory
-        # registry.add("http:app", {"name": self.ext_name, "factory": app_factory})
+        # Deliver the web client
+        registry.add('http:static', {
+            'name': self.ext_name,
+            'path': os.path.join(os.path.dirname(__file__), '..', 'app'),
+        })
+
+        # Add the API
+        from vyvo.api import api_factory
+        registry.add("http:app", {
+            "name": self.ext_name + "_api",
+            "factory": api_factory
+        })

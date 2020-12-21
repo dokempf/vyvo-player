@@ -10,7 +10,7 @@ class DiskMockDevice(RFIDDeviceBase):
 
     def read(self):
         try:
-            return open(self.diskfile).read()
+            return open(self.diskfile).read().strip()
         except FileNotFoundError:
             return None
 
