@@ -1,8 +1,9 @@
 import os
 
-# Remove the configured versions of the hooks
+# Remove the configured versions of the hooks/Jinja extensions
 os.remove("pre_gen_project.py")
 os.remove("post_gen_project.py")
+os.remove("__init__.py")
 
 # Cut the install.sh script into chunks at reboot
 index = 0

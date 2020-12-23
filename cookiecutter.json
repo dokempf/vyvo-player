@@ -1,5 +1,9 @@
 {
+    "hostname": "{{ 42|hostname }}",
     "device": ["rc522", "None"],
     "development_setup": ["Yes", "No"],
-    "_installer": "installer"
+    "_current_hostname": "{{ 42|hostname }}",
+    "_extensions": [
+        "installer.hostname"
+    ]
 }
