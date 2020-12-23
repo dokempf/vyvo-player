@@ -37,6 +37,6 @@ class DeviceActor(pykka.ThreadingActor):
         if message == "read":
             return self.device.read()
         elif message.startswith("write:"):
-            self.device.write(message[7:])
+            self.device.write(message[6:])
         else:
             raise ValueError("DeviceActor expects 'read' or 'write:<uri>' as message!")

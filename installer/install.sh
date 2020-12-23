@@ -1,8 +1,12 @@
 {# This script is a mixture of regular bash with the Jinja2 templating language! -#}
-#!/bin/bash
+{# It is automatically split at each reboot command and a restart procedure after #}
+{# the reboot is added. This also adds the shebang - there is no need for one here#}
 
-# Abort this script on the first failure
-set -e
+{% if cookiecutter.hostname != cookiecutter._current_hostname %}
+# Set the given hostname
+echo {{ cookiecutter.hostname }} > /etc/hostname
+sed -i "s/127.0.1.1.*{{ cookiecutter._current_hostname }}/127.0.1.1\t{{ cookiecutter.hostname}}/g" /etc/hosts
+{% endif %}
 
 # Add the apt.mopidy.com repository
 wget -q -O - https://apt.mopidy.com/mopidy.gpg | apt-key add -
@@ -32,3 +36,6 @@ python3 -m pip install -e vyvo-player
 {% else %}
 python3 -m pip install git+https://github.com/dokempf/vyvo-player.git
 {% endif %}
+
+# Copy the configuration
+cp ./installer/mopidy.conf ~/.config/mopidy

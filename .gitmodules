@@ -1,0 +1,3 @@
+[submodule "app/js/mopidy.js"]
+	path = app/js/mopidy.js
+	url = https://github.com/mopidy/mopidy.js.git

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="js/jquery-3.5.1.js"></script>
+<script src="js/mopidy.js"></script>
+<script type="text/JavaScript">
+const mopidy = new Mopidy();
+
+// Register handlers for all sort of events
+$(document).ready(function() {
+    // Initialize the volume input field with the current mixer volume
+    mopidy.on("state:online", () => {
+        mopidy.mixer.getVolume().then(
+            (vol) => { $('#volume').val(vol); },
+            () => { alert("Error getting volume"); }
+        );
+    });
+
+    // Handle a Set Volume Button Click
+    $("#setvolume").click(() => {
+        var vol = parseInt($("#volume").val(), 10);
+        vol = Math.min(100, vol);
+        vol = Math.max(0, vol);
+        mopidy.mixer.setVolume([vol]).then(
+            () => { $('#volume').val(vol); },
+            () => { alert("Error setting volume!"); }
+        );
+    });
+
+    // Handle a Read button click
+    $("#read").click(() => {
+        $.getJSON('/vyvo_api/read/', (data) => {
+            $('#uri').val(data['uri']);
+        })    
+    });
+
+    // Make sure that we read once upon loading the client
+    $("#read").click();
+
+    // Handle a Write button click
+    $("#write").click(() => {
+        $.post('/vyvo_api/write/', {"uri": $("#uri").val()});
+        $("#read").click();
+    });
+})
+</script>
+</head>
+<body>
+<p> Volume: <input type="text" id="volume" value="?"><button id="setvolume">Set!</button></p>
+<p>Current RFID URI: <input type="text" id="uri" value=""><button id="read">Read!</button><button id="write">Write!</button></p>
+
+</body>
+</html>

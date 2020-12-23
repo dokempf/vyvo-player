@@ -12,12 +12,13 @@ class DispatchCommand(commands.Command):
 
 class ReadCommand(commands.Command):
     def run(self, args, config):
-        device = DeviceActor(config)
+        device = DeviceActor.start(config)
         uri = device.ask("read")
         if uri is None:
             print("No URI stored on RFID tag!")
         else:
             print(uri)
+        device.stop()
         return 0
 
 
@@ -27,6 +28,7 @@ class WriteCommand(commands.Command):
         self.add_argument("uri")
 
     def run(self, args, config):
-        device = DeviceActor(config)
+        device = DeviceActor.start(config)
         device.ask("write:{}".format(args.uri))
+        device.stop()
         return 0
