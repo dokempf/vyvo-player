@@ -34,6 +34,9 @@ $(document).ready(function() {
         })    
     });
 
+    // Make sure that we read once upon loading the client
+    $("#read").click();
+
     // Handle a Write button click
     $("#write").click(() => {
         $.post('/vyvo_api/write/', {"uri": $("#uri").val()});
