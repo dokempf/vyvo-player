@@ -2,8 +2,16 @@
 <html>
 <head>
 <script src="js/jquery-3.5.1.js"></script>
+<script src="js/mopidy.js"></script>
 <script type="text/JavaScript">
+const mopidy = new Mopidy();
+// Register handlers for all sort of events
 $(document).ready(function(){
+    // Read the current master volume
+    mopidy.on("state:online", () => {
+        alert(mopidy.mixer.get_volume());
+    });
+
     // This handles the Read button
     $("#read").click(function(){
         $.getJSON('/vyvo_api/read/', function(data) {
@@ -16,5 +24,7 @@ $(document).ready(function(){
 <body>
 <button id="read">Read!</button>
 <p id="uri"><it>No URI read yet!</it></p>
+
+<p> Volume: <input type="text" id="volume">
 </body>
 </html>
