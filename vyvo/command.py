@@ -1,34 +1,26 @@
-from mopidy import commands
+import pykka
 
 from vyvo.devices import DeviceActor
+from contextlib import contextmanager
 
 
-class DispatchCommand(commands.Command):
-    def __init__(self):
-        super(DispatchCommand, self).__init__()
-        self.add_child("read", ReadCommand())
-        self.add_child("write", WriteCommand())
+@contextmanager
+def unique_actor(actor_type, config):
+    actors = pykka.ActorRegistry.get_by_class(actor_type)
+    if len(actors) == 0:
+        actor = actor_type.start(config)
+        yield actor
+        actor.stop()
+    else:
+        assert len(actors) == 1
+        yield actors[0]
 
 
-class ReadCommand(commands.Command):
-    def run(self, args, config):
-        device = DeviceActor.start(config)
-        uri = device.ask("read")
-        if uri is None:
-            print("No URI stored on RFID tag!")
-        else:
-            print(uri)
-        device.stop()
-        return 0
+def read_from_device(config):
+    with unique_actor(DeviceActor, config) as device:
+        return device.ask("read")
 
 
-class WriteCommand(commands.Command):
-    def __init__(self):
-        super(WriteCommand, self).__init__()
-        self.add_argument("uri")
-
-    def run(self, args, config):
-        device = DeviceActor.start(config)
-        device.ask("write:{}".format(args.uri))
-        device.stop()
-        return 0
+def write_to_device(config, uri):
+    with unique_actor(DeviceActor, config) as device:
+        return device.ask("write:{}".format(uri))

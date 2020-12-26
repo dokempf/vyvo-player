@@ -26,7 +26,7 @@ class Extension(ext.Extension):
         return schema
 
     def get_command(self):
-        from vyvo.command import DispatchCommand
+        from vyvo.cli import DispatchCommand
 
         return DispatchCommand()
 
