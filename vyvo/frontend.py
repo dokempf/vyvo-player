@@ -105,6 +105,10 @@ class RFIDPollingActor(pykka.ThreadingActor):
         if uri is None and uri != self.current_uri:
             uri = self.device.ask("read")
 
+        # If we read an empty string, this tag does not hold any data
+        if uri == "":
+            uri = None
+
         # If the URI changed, the frontend should start or stop playback
         if uri != self.current_uri:
             self.current_uri = uri
