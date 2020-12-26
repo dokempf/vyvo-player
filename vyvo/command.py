@@ -1,6 +1,9 @@
+import os
 import pykka
 
+from datetime import datetime, timedelta
 from vyvo.devices import DeviceActor
+from vyvo.frontend import resume_shelve
 from contextlib import contextmanager
 
 
@@ -14,6 +17,11 @@ def unique_actor(actor_type, config):
     else:
         assert len(actors) == 1
         yield actors[0]
+
+
+def get_cache_entries(config):
+    with resume_shelve(config) as resume:
+        return {i: {"uri": k, "delta": str(datetime.utcnow() - v[2])} for i, (k, v) in enumerate(sorted(resume.items(), key=lambda i: i[1][2]))}
 
 
 def read_from_device(config):
