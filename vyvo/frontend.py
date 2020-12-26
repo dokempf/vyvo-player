@@ -1,29 +1,34 @@
+import os
 import pykka
+import shelve
 import time
 
 from datetime import datetime, timedelta
 from mopidy import core
 from vyvo.devices import DeviceActor
 from pytools.persistent_dict import PersistentDict, NoSuchEntryError
-from os.path import join
+from contextlib import contextmanager
+
+
+@contextmanager
+def resume_shelve(config):
+    # A disk-backed dictionary that we use to store time positions
+    # that can later be used to resume playback, if our resume policy
+    # requires it. We store key value pairs of the following form:
+    # track.uri -> (time in ms, time stamp of playback)
+    from vyvo import Extension
+    filename = os.path.join(Extension.get_data_dir(config), "resume")
+    with shelve.open(filename) as resume_shelf:
+        yield resume_shelf
 
 
 class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
         super(RFIDFrontend, self).__init__()
+        self.config = config
         self.core = core
         self.user_uri = None
         self.poller = RFIDPollingActor.start(self.actor_ref, config)
-
-        # A disk-backed dictionary that we use to store time positions
-        # that can later be used to resume playback, if our resume policy
-        # requires it. We store key value pairs of the following form:
-        # track.uri -> (time in ms, time stamp of playback)
-        from vyvo import Extension
-
-        self.resume_dict = PersistentDict(
-            "resume_data", container_dir=join(Extension.get_data_dir(config), "resume")
-        )
 
         # The timedelta object to decide whether we want to use resume data
         self.resume_threshold = config["vyvo"]["resume_threshold"]
@@ -44,7 +49,8 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
             track = self.core.playback.get_current_track().get()
             pos = self.core.playback.get_time_position().get()
             stamp = datetime.utcnow()
-            self.resume_dict[self.user_uri] = (track, pos, stamp)
+            with resume_shelve(self.config) as resume:
+                resume[self.user_uri] = (track, pos, stamp)
 
         # Start playback of a new URI by clearing the tracklist,
         # adding the URI and playing it. The clearing part is radical
@@ -57,20 +63,19 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
 
     def track_playback_started(self, tl_track):
         # Maybe resume playback where we have left off
-        try:
-            track, pos, stamp = self.resume_dict[self.user_uri]
-            delta = datetime.utcnow() - stamp
-            if delta < self.resume_threshold:
-                # Skip to the correct track
-                if self.core.playback.get_current_track().get() != track:
-                    self.core.tracklist.remove({"tlid": [tl_track.tlid]})
-                    return
+        with resume_shelve(self.config) as resume:
+            if self.user_uri in resume:
+                track, pos, stamp = resume[self.user_uri]
+                delta = datetime.utcnow() - stamp
+                if delta < self.resume_threshold:
+                    # Skip to the correct track
+                    if self.core.playback.get_current_track().get() != track:
+                        self.core.tracklist.remove({"tlid": [tl_track.tlid]})
+                        return
 
-                # Seek to correct position
-                self.core.playback.seek(pos)
-                del self.resume_dict[self.user_uri]
-        except NoSuchEntryError:
-            pass
+                    # Seek to correct position
+                    self.core.playback.seek(pos)
+                    del resume[self.user_uri]
 
         # Restart polling on the polling actor
         self.poller.tell(None)

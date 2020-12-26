@@ -19,7 +19,6 @@ setup(
         "Pykka",
         "tornado",
         "pi-rc522",
-        "pytools",
         "pytimeparse",
     ],
 )
