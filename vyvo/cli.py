@@ -3,6 +3,7 @@ from mopidy import commands
 from vyvo.command import (
     get_cache_entries,
     read_from_device,
+    remove_cache_entry,
     write_to_device,
 )
 
@@ -19,6 +20,21 @@ class CacheDispatchCommand(commands.Command):
     def __init__(self):
         super(CacheDispatchCommand, self).__init__()
         self.add_child("show", CacheShowCommand())
+        self.add_child("remove", CacheRemoveCommand())
+
+
+class CacheRemoveCommand(commands.Command):
+    def __init__(self):
+        super(CacheRemoveCommand, self).__init__()
+        self.add_argument("which")
+
+    def run(self, args, config):
+        if args.which == "all":
+            for i in range(len(get_cache_entries(config))):
+                remove_cache_entry(config, i)
+        else:
+            remove_cache_entry(config, args.which)
+        return 0
 
 
 class CacheShowCommand(commands.Command):
@@ -27,6 +43,7 @@ class CacheShowCommand(commands.Command):
             print("Item #{}".format(i))
             print("  URI: {}".format(entry["uri"]))
             print("  Age: {}".format(entry["delta"]))
+        return 0
 
 
 class ReadCommand(commands.Command):

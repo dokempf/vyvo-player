@@ -24,6 +24,16 @@ def get_cache_entries(config):
         return {i: {"uri": k, "delta": str(datetime.utcnow() - v[2])} for i, (k, v) in enumerate(sorted(resume.items(), key=lambda i: i[1][2]))}
 
 
+def remove_cache_entry(config, which):
+    with resume_shelve(config) as resume:
+        try:
+            index = int(which)
+            uri = list(sorted(resume.keys(), key=lambda k: resume[k][2]))[index]
+        except ValueError:
+            uri = which
+        del resume[uri]
+
+
 def read_from_device(config):
     with unique_actor(DeviceActor, config) as device:
         return device.ask("read")
