@@ -33,24 +33,31 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         # The timedelta object to decide whether we want to use resume data
         self.resume_threshold = config["vyvo"]["resume_threshold"]
 
+    def _cache_timestamp(self):
+        # Extract the following information for our resume policy:
+        # * Current track (identified through the URI)
+        # * Time position within track
+        # * Time stamp of now to apply resume policies
+        if self.user_uri is None:
+            return
+        track = self.core.playback.get_current_track().get()
+        if track is not None:
+            pos = self.core.playback.get_time_position().get()
+            stamp = datetime.utcnow()
+            with resume_shelve(self.config) as resume:
+                resume[self.user_uri] = (track, pos, stamp)
+
     def on_start(self):
         # This kicks of the recursive polling of the polling actor
         self.poller.tell(None)
 
     def on_stop(self):
+        self._cache_timestamp()
         self.poller.stop()
 
     def on_receive(self, uri):
-        # Extract the following information for our resume policy:
-        # * Current track (identified through the URI)
-        # * Time position within track
-        # * Time stamp of now to apply resume policies
-        if uri is None:
-            track = self.core.playback.get_current_track().get()
-            pos = self.core.playback.get_time_position().get()
-            stamp = datetime.utcnow()
-            with resume_shelve(self.config) as resume:
-                resume[self.user_uri] = (track, pos, stamp)
+        # Cache the timestamp of what we are currently playing
+        self._cache_timestamp()
 
         # Start playback of a new URI by clearing the tracklist,
         # adding the URI and playing it. The clearing part is radical
@@ -65,7 +72,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         # Maybe resume playback where we have left off
         with resume_shelve(self.config) as resume:
             if self.user_uri in resume:
-                track, pos, stamp = resume[self.user_uri]
+                track, pos, stamp = resume.pop(self.user_uri)
                 delta = datetime.utcnow() - stamp
                 if delta < self.resume_threshold:
                     # Skip to the correct track
@@ -75,7 +82,6 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
 
                     # Seek to correct position
                     self.core.playback.seek(pos)
-                    del resume[self.user_uri]
 
         # Restart polling on the polling actor
         self.poller.tell(None)
