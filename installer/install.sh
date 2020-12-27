@@ -19,6 +19,12 @@ apt upgrade
 # Install Mopidy including all its necessary GStreamer dependencies
 apt install mopidy
 
+# Install Mopidy extensions and their dependencies
+{% if cookiecutter.youtube == "Yes" %}
+apt install gstreamer1.0-plugins-bad
+python3 -m pip install https://github.com/natumbri/mopidy-youtube/archive/develop.zip
+{% endif %}
+
 {% if cookiecutter.device == "rc522" %}
 # Enable SPI
 sed -i 's/#dtparam=spi=on/dtparam=spi=on/g' /boot/config.txt

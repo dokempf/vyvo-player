@@ -1,6 +1,7 @@
 {
     "hostname": "{{ 42|hostname }}",
     "device": ["rc522", "None"],
+    "youtube": ["Yes", "No"],
     "development_setup": ["Yes", "No"],
     "_extensions": [
         "installer.hostname"
