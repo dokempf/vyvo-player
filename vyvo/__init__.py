@@ -1,9 +1,13 @@
+import logging
 import os
 from mopidy import config, ext
 
 
 # This is the unique location of this version string throughout the code
 __version__ = "0.1"
+
+# This logger is used throughout the entire extension
+logger = logging.getLogger(__name__)
 
 
 class Extension(ext.Extension):

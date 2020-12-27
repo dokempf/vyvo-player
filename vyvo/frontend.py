@@ -5,6 +5,7 @@ import time
 
 from datetime import datetime, timedelta
 from mopidy import core
+from vyvo import logger
 from vyvo.devices import DeviceActor
 from contextlib import contextmanager
 
@@ -44,6 +45,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
             pos = self.core.playback.get_time_position().get()
             stamp = datetime.utcnow()
             with resume_shelve(self.config) as resume:
+                logger.info("Saving a resume timestamp for user URI '{}'".format(self.user_uri))
                 resume[self.user_uri] = (track, pos, stamp)
 
     def on_start(self):
@@ -67,7 +69,14 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
         self.core.tracklist.add(uris=[uri])
         self.core.playback.play()
 
+        if uri is None:
+            logger.info("Vyvo stopped playback because the device registered no tag or empty tag.")
+        else:
+            logger.info("Vyvo requested playback of user URI '{}'".format(uri))
+
     def track_playback_started(self, tl_track):
+        logger.info("Playback of track URI '{}' started".format(tl_track.track.uri))
+
         # Maybe resume playback where we have left off
         with resume_shelve(self.config) as resume:
             if self.user_uri in resume:
@@ -81,6 +90,7 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
 
                     # Seek to correct position
                     self.core.playback.seek(pos)
+                    logger.info("Seeked position {}ms because of resume policy".format(pos))
 
         # Restart polling on the polling actor
         self.poller.tell(None)
@@ -95,6 +105,9 @@ class RFIDPollingActor(pykka.ThreadingActor):
         self.current_uri = None
 
     def on_receive(self, message):
+        # In debugging, it is often useful to see the polling frequency live
+        logger.debug("Polling the vyvo device...")
+
         # Read URI from device - None means no tag is present
         uri = self.device.ask("read")
 
