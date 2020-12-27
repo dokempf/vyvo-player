@@ -2,10 +2,10 @@
 {# It is automatically split at each reboot command and a restart procedure after #}
 {# the reboot is added. This also adds the shebang - there is no need for one here#}
 
-{% if cookiecutter.hostname != cookiecutter._current_hostname %}
+{% if cookiecutter.hostname != 42|hostname %}
 # Set the given hostname
 echo {{ cookiecutter.hostname }} > /etc/hostname
-sed -i "s/127.0.1.1.*{{ cookiecutter._current_hostname }}/127.0.1.1\t{{ cookiecutter.hostname}}/g" /etc/hosts
+sed -i "s/127.0.1.1.*{{ 42|hostname }}/127.0.1.1\t{{ cookiecutter.hostname}}/g" /etc/hosts
 {% endif %}
 
 # Add the apt.mopidy.com repository
