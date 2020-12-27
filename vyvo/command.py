@@ -21,7 +21,14 @@ def unique_actor(actor_type, config):
 
 def get_cache_entries(config):
     with resume_shelve(config) as resume:
-        return {i: {"uri": k, "delta": str(datetime.utcnow() - v[2])} for i, (k, v) in enumerate(sorted(resume.items(), key=lambda i: i[1][2]))}
+        return {
+            i: {
+                "uri": k,
+                "delta": str(datetime.utcnow() - v[2]),
+                "pos": v[1]
+            }
+            for i, (k, v) in enumerate(sorted(resume.items(), key=lambda i: i[1][2]))
+        }
 
 
 def remove_cache_entry(config, which):

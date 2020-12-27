@@ -43,6 +43,7 @@ class CacheShowCommand(commands.Command):
             print("Item #{}".format(i))
             print("  URI: {}".format(entry["uri"]))
             print("  Age: {}".format(entry["delta"]))
+            print("  Pos: {}".format(entry["pos"]))
         return 0
 
 
