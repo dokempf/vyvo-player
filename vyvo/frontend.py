@@ -84,9 +84,9 @@ class RFIDFrontend(pykka.ThreadingActor, core.CoreListener):
                 delta = datetime.utcnow() - stamp
                 if delta < self.resume_threshold:
                     # Skip to the correct track
-                    if self.core.playback.get_current_track().get() != track:
-                        self.core.tracklist.remove({"tlid": [tl_track.tlid]})
-                        return
+                    # if self.core.playback.get_current_track().get() != track:
+                    #     self.core.tracklist.remove({"tlid": [tl_track.tlid]})
+                    #     return
 
                     # Seek to correct position
                     self.core.playback.seek(pos)
