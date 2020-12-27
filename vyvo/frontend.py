@@ -6,7 +6,6 @@ import time
 from datetime import datetime, timedelta
 from mopidy import core
 from vyvo.devices import DeviceActor
-from pytools.persistent_dict import PersistentDict, NoSuchEntryError
 from contextlib import contextmanager
 
 
