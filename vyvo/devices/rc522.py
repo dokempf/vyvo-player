@@ -1,4 +1,4 @@
-from vyvo.devices import RFIDDeviceBase, MopidyRFIDError
+from vyvo.devices import RFIDDeviceBase, MopidyDeviceError
 
 from pirc522 import RFID
 
@@ -18,7 +18,7 @@ def mifare1k_block_address_generator(reserved_addresses=()):
 def err_handle(ret):
     if isinstance(ret, tuple):
         if ret[0]:
-            raise MopidyRFIDError("Encountered error in handling of RFID tag")
+            raise MopidyDeviceError("Encountered error in handling of RFID tag")
         if len(ret) == 2:
             # Unpacking 1-tuples for better readability
             return ret[1]
@@ -35,6 +35,9 @@ class RC522Device(RFIDDeviceBase):
         # Set the antenna fain factor, init() will bring this to the chip
         self.reader.antenna_gain = config["vyvo"]["antenna_gain"]
 
+    def minimum_flakiness(self):
+        return 5, 3
+
     def read(self):
         # Send a request to the RFID Reader
         self.reader.init()
@@ -45,7 +48,7 @@ class RC522Device(RFIDDeviceBase):
             return None
 
         if error:
-            raise MopidyRFIDError("Found RFID tag, but still produced an error")
+            raise MopidyDeviceError("Found RFID tag, but still produced an error")
 
         uid = err_handle(self.reader.anticoll())
         err_handle(self.reader.select_tag(uid))
@@ -84,7 +87,7 @@ class RC522Device(RFIDDeviceBase):
 
         # If we did not encounter a tag, do nothing
         if tag_type is None:
-            raise MopidyRFIDError("Tried writing, but no RFID card was found!")
+            raise MopidyDeviceError("Tried writing, but no RFID card was found!")
 
         uid = err_handle(self.reader.anticoll())
         err_handle(self.reader.select_tag(uid))
@@ -107,7 +110,7 @@ class RC522Device(RFIDDeviceBase):
         # Note that this is the 'lazy' limit which does not go through the hassle
         # of leveraging available data bytes in sector trailers.
         if size > 751:
-            raise MopidyRFIDError("URI length exceeds the RFID limit of 751 bytes!")
+            raise MopidyDeviceError("URI length exceeds the RFID limit of 751 bytes!")
 
         # Pad data to a multiple of 16
         data = b"".join([data] + [b"0"] * (16 - size % 16))

@@ -111,13 +111,8 @@ class RFIDPollingActor(pykka.ThreadingActor):
         # Read URI from device - None means no tag is present
         uri = self.device.ask("read")
 
-        # If no tag was found, we should double check. At least the
-        # RC522 produces false negatives once in a while, which result
-        # in unwanted restarts of playback
-        if uri is None and uri != self.current_uri:
-            uri = self.device.ask("read")
-
-        # If we read an empty string, this tag does not hold any data
+        # If we read an empty string, this tag does not hold any data.
+        # We treat it as if no tag is present at all.
         if uri == "":
             uri = None
 

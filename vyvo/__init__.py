@@ -27,6 +27,8 @@ class Extension(ext.Extension):
         schema["polling_interval"] = config.Integer(minimum=100)
         schema["antenna_gain"] = config.Integer(minimum=0, maximum=7)
         schema["resume_threshold"] = Timedelta()
+        schema["device_flakiness"] = config.List()
+
         return schema
 
     def get_command(self):
