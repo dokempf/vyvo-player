@@ -3,7 +3,7 @@
     "device": ["rc522", "None"],
     "power_switch": ["Simple", "None"],
     "youtube": ["Yes", "No"],
-    "development_setup": ["Yes", "No"],
+    "production": ["Yes", "No"],
     "_extensions": [
         "installer.hostname"
     ]

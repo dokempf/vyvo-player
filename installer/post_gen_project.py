@@ -35,3 +35,9 @@ current.close()
 with open("install.sh", "w") as f:
     f.write("#!/bin/bash\n")
     f.write("./installer/install-0.sh")
+
+
+# Remove some unneeded files:
+if "{{ cookiecutter.power_switch }}" != "Simple":
+    os.remove("gpio_if.sh")
+    os.remove("powerswitch-sync.service")

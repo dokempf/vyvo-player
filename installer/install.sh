@@ -2,6 +2,9 @@
 {# It is automatically split at each reboot command and a restart procedure after #}
 {# the reboot is added. This also adds the shebang - there is no need for one here#}
 
+{# TODO: Check for the pi/raspberry password combination and force the user to change #}
+{# https://stackoverflow.com/questions/18035093/given-a-linux-username-and-a-password-how-can-i-test-if-it-is-a-valid-account/18035305 #}
+
 {% if cookiecutter.hostname != 42|hostname %}
 # Set the given hostname
 echo {{ cookiecutter.hostname }} > /etc/hostname
@@ -33,31 +36,36 @@ sed -i 's/#dtparam=spi=on/dtparam=spi=on/g' /boot/config.txt
 {% if cookiecutter.power_switch == "Simple" %}
 # Configure the GPIO driven shutdown/wake up for the button
 echo "[all]" >> /boot/config.txt
-echo "dtoverlay=gpio-shutdown," >>  /boot/config.txt
+echo "dtoverlay=gpio-shutdown,active_low=0" >>  /boot/config.txt
 
 # Move the Python script that performs shutdown upon boot by power cord
 cp ./installer/gpio_if.sh /usr/local/sbin
 
 # Add the systemd service that syncs the switch with the Pi state after a boot that was
 # triggered by inserting the power cord.
-cp ./installer/systemd/powerswitch-sync.service /etc/systemd/system
+cp ./installer/powerswitch-sync.service /etc/systemd/system
 {% endif %}
 
 {% if cookiecutter.development_setup == "Yes" %}
+{% endif %}
+
+# Install the Vyvo Python package and the Mopidy configuration
+{% if cookiecutter.production == "Yes" %}
+# Globally install extensions+configuration and activate systemd service
+python3 -m pip install git+https://github.com/dokempf/vyvo-player.git
+cp ./installer/mopidy.conf /etc/mopidy
+usermod -a -G spi mopidy
+usermod -a -G gpio mopidy
+systemctl enable mopidy
+{% else %}
+# Install editable from git main branch and use local configuration
+git clone https://github.com/dokempf/vyvo-player.git
+python3 -m pip install -e vyvo-player
+cp ./installer/mopidy.conf ~/.config/mopidy
+
 # Install some development tools that I typically enjpy having around
 python3 -m pip install IPython pudb
 {% endif %}
-
-# Install the Vyvo Python package
-{% if cookiecutter.development_setup == "Yes" %}
-git clone https://github.com/dokempf/vyvo-player.git
-python3 -m pip install -e vyvo-player
-{% else %}
-python3 -m pip install git+https://github.com/dokempf/vyvo-player.git
-{% endif %}
-
-# Copy the configuration
-cp ./installer/mopidy.conf ~/.config/mopidy
 
 #TODO: Show WIRING.md here
 
@@ -65,6 +73,9 @@ cp ./installer/mopidy.conf ~/.config/mopidy
 reboot
 
 {% if cookiecutter.power_switch == "Simple" %}
-/usr/local/sbin/gpio_if.sh 2 1 "echo \"WARNING: Your power switch seems to be wired wrongly. Manually run 'sudo systemctl enable powerswitch-sync' after fixing.\""
-/usr/local/sbin/gpio_if.sh 2 0 "systemctl enable powerswitch-sync"
+# If we enable this service before the button is properly connected, the
+# Pi will shutdown on all start-ups, which will be a proper nightmare for
+# users. We therefor only enable it, if the button is in place.
+/usr/local/sbin/gpio_if.sh 2 1 echo "WARNING: Your power switch seems to be wired wrongly. Manually run 'sudo systemctl enable powerswitch-sync' after fixing."
+/usr/local/sbin/gpio_if.sh 2 0 systemctl enable powerswitch-sync
 {% endif %}
