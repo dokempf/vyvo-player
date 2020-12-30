@@ -1,1 +1,1 @@
-include mopidy_rfid/ext.conf
+include vyvo/ext.conf
