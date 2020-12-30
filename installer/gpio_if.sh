@@ -11,7 +11,7 @@ echo "in" > /sys/class/gpio/gpio$1/direction
 STATE=`cat /sys/class/gpio/gpio$1/value`
 
 if [ "x$STATE" = "x$2" ]; then
-    "$3"
+    "${@:3:`expr $#-2`}"
 fi
 
 echo "$1" > /sys/class/gpio/unexport
