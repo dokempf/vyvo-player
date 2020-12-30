@@ -30,6 +30,19 @@ python3 -m pip install https://github.com/natumbri/mopidy-youtube/archive/develo
 sed -i 's/#dtparam=spi=on/dtparam=spi=on/g' /boot/config.txt
 {% endif %}
 
+{% if cookiecutter.power_switch == "Simple" %}
+# Configure the GPIO driven shutdown/wake up for the button
+echo "[all]" >> /boot/config.txt
+echo "dtoverlay=gpio-shutdown," >>  /boot/config.txt
+
+# Move the Python script that performs shutdown upon boot by power cord
+cp ./installer/gpio_if.sh /usr/local/sbin
+
+# Add the systemd service that syncs the switch with the Pi state after a boot that was
+# triggered by inserting the power cord.
+cp ./installer/systemd/powerswitch-sync.service /etc/systemd/system
+{% endif %}
+
 {% if cookiecutter.development_setup == "Yes" %}
 # Install some development tools that I typically enjpy having around
 python3 -m pip install IPython pudb
@@ -45,3 +58,13 @@ python3 -m pip install git+https://github.com/dokempf/vyvo-player.git
 
 # Copy the configuration
 cp ./installer/mopidy.conf ~/.config/mopidy
+
+#TODO: Show WIRING.md here
+
+# Plenty of changes above require a reboot
+reboot
+
+{% if cookiecutter.power_switch == "Simple" %}
+/usr/local/sbin/gpio_if.sh 2 1 "echo \"WARNING: Your power switch seems to be wired wrongly. Manually run 'sudo systemctl enable powerswitch-sync' after fixing.\""
+/usr/local/sbin/gpio_if.sh 2 0 "systemctl enable powerswitch-sync"
+{% endif %}

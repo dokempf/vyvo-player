@@ -1,0 +1,8 @@
+[Unit]
+Description=Sync with the Power Switch by shutting down after power plug insert
+
+[Service]
+ExecStart=/usr/local/sbin/gpio_if.sh 2 1 "shutdown -h 0"
+
+[Install]
+WantedBy=basic.target
