@@ -39,10 +39,22 @@ $(document).ready(function() {
 
     // Handle a Write button click
     $("#write").click(() => {
-        $.post('/vyvo_api/write/', {"uri": $("#uri").val()});
-        $("#read").click();
+        var uri = $("#uri").val();
+        mopidy.getUriSchemes().then(schemes => {
+            var okay = false;
+            schemes.forEach(scheme => {
+                if(uri.startsWith(scheme + ":")) {
+                    okay = true;
+                    $.post('/vyvo_api/write/', {"uri": uri});
+                    $("#read").click();
+                }
+            });
+            if (!okay) {
+                alert("Invalid URI - not written to tag!");
+            }
+        });
     });
-})
+});
 </script>
 </head>
 <body>
