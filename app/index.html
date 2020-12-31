@@ -6,14 +6,31 @@
 <script type="text/JavaScript">
 const mopidy = new Mopidy();
 
+function pauseResumeButtonText(state) {
+    if (state == "paused") {
+        $("#pause_resume").text("Resume Playback");
+    }
+    else {
+        $("#pause_resume").text("Pause Playback");
+    }
+}
+
 // Register handlers for all sort of events
 $(document).ready(function() {
-    // Initialize the volume input field with the current mixer volume
+    // Initialize some values with the current mopidy state on page load
     mopidy.on("state:online", () => {
+        // Initialize the volume input field with the current mixer volume
         mopidy.mixer.getVolume().then(
             (vol) => { $('#volume').val(vol); },
             () => { alert("Error getting volume"); }
         );
+
+        // Initialize the text on the Pause/Resume button with the current state
+        mopidy.playback.getState().then(pauseResumeButtonText);
+    });
+
+    mopidy.on("event:playbackStateChanged", (args) => {
+        pauseResumeButtonText(args.new_state);
     });
 
     // Handle a Set Volume Button Click
@@ -25,6 +42,18 @@ $(document).ready(function() {
             () => { $('#volume').val(vol); },
             () => { alert("Error setting volume!"); }
         );
+    });
+
+    // Handle a Pause/Resume Button Click
+    $("#pause_resume").click(() => {
+        mopidy.playback.getState().then(state => {
+            if (state == "paused") {
+                mopidy.playback.resume().then(() => {});
+            }
+            else {
+                mopidy.playback.pause().then(() => {});
+            }
+        });
     });
 
     // Handle a Read button click
@@ -58,8 +87,15 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
-<p> Volume: <input type="text" id="volume" value="?"><button id="setvolume">Set!</button></p>
-<p>Current RFID URI: <input type="text" id="uri" value=""><button id="read">Read!</button><button id="write">Write!</button></p>
+<p>
+    <h2>Playback Control</h2>
+    <p> Volume: <input type="text" id="volume" value="?"><button id="setvolume">Set!</button></p>
+    <p><button id="pause_resume">?</button></p>
+</p>
+<p>
+    <h2>Media Control</h2>
+    <p>Current RFID URI: <input type="text" id="uri" value=""><button id="read">Read!</button><button id="write">Write!</button></p>
+</p>
 
 </body>
 </html>
