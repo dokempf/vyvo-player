@@ -28,6 +28,10 @@ apt install gstreamer1.0-plugins-bad
 python3 -m pip install https://github.com/natumbri/mopidy-youtube/archive/develop.zip
 {% endif %}
 
+{% if cookiecutter.soundcloud_token != "None" %}
+python3 -m pip install Mopidy-SoundCloud
+{% endif %}
+
 {% if cookiecutter.device == "rc522" %}
 # Enable SPI
 sed -i 's/#dtparam=spi=on/dtparam=spi=on/g' /boot/config.txt
@@ -44,9 +48,6 @@ cp ./installer/gpio_if.sh /usr/local/sbin
 # Add the systemd service that syncs the switch with the Pi state after a boot that was
 # triggered by inserting the power cord.
 cp ./installer/powerswitch-sync.service /etc/systemd/system
-{% endif %}
-
-{% if cookiecutter.development_setup == "Yes" %}
 {% endif %}
 
 # Install the Vyvo Python package and the Mopidy configuration
