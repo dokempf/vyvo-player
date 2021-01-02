@@ -27,6 +27,24 @@ $(document).ready(function() {
 
         // Initialize the text on the Pause/Resume button with the current state
         mopidy.playback.getState().then(pauseResumeButtonText);
+
+        // Initialize the dropdown menu with available URI schemes
+        mopidy.getUriSchemes().then(schemes => {
+            schemes.forEach(scheme => {
+                if(scheme == "youtube") {
+                    $("#mediatype").append(new Option("Youtube Video/Playlist", "youtube"));
+                }
+                // Add more if clauses here for additional URI schemes that
+                // the web frontend should support. These are not added automatically
+                // because they are opt-in during installation.
+            });
+
+            // Automatically select the Plain URI type by default
+            $("#mediatype").val("plain");
+        });
+
+        // Make sure that we read once upon loading the client
+        $("#read").click();
     });
 
     mopidy.on("event:playbackStateChanged", (args) => {
@@ -59,16 +77,34 @@ $(document).ready(function() {
     // Handle a Read button click
     $("#read").click(() => {
         $.getJSON('/vyvo_api/read/', (data) => {
-            $('#uri').val(data['uri']);
-        })    
+            mopidy.getUriSchemes().then(schemes => {
+                var okay = false;
+                schemes.forEach(scheme => {
+                    if(data['uri'].startsWith(scheme + ":")) {
+                        okay = true;
+                        $("#mediatype").val(scheme);
+                        $("#mediadata").val(data["uri"].split(":").slice(1).join(":"));
+                    }
+                });
+                if (!okay) {
+                    $("#mediatype").val("plain");
+                    $("#mediadata").val(data["uri"]);
+                }
+                $(document).data("lastmediatype", $("#mediatype").val());
+            });
+        });
     });
-
-    // Make sure that we read once upon loading the client
-    $("#read").click();
 
     // Handle a Write button click
     $("#write").click(() => {
-        var uri = $("#uri").val();
+        // Construct the URI from Type + Data
+        var scheme = $("#mediatype").val() + ":";
+        if (scheme == "plain:") {
+            scheme = "";
+        }
+        var uri = scheme + $("#mediadata").val();
+
+        // Write it to tag, verifying that it is of supported URI scheme
         mopidy.getUriSchemes().then(schemes => {
             var okay = false;
             schemes.forEach(scheme => {
@@ -83,6 +119,24 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Switching Media Type to/from Plain URI should affect the data field
+    $('#mediatype').on('change', () => {
+        // Switching to plain URI
+        alert($(document).data('lastmediatype'));
+        if (($('#mediatype').val() == "plain") && ($('#mediadata').val() != "")) {
+            $('#mediadata').val($(document).data('lastmediatype') + ":" + $('#mediadata').val());
+        }
+        // Switching from plain URI
+        if ($(document).data('lastmediatype') == "plain") {
+            var scheme = $('#mediadata').val().split(":", 1);
+            var data = $('#mediadata').val().split(":").slice(1).join(":");
+            if (scheme == $('#mediatype').val()) {
+                $('#mediadata').val(data);
+            }
+        }
+        $(document).data("lastmediatype", $("#mediatype").val());
+    });
 });
 </script>
 </head>
@@ -94,7 +148,14 @@ $(document).ready(function() {
 </p>
 <p>
     <h2>Media Control</h2>
-    <p>Current RFID URI: <input type="text" id="uri" value=""><button id="read">Read!</button><button id="write">Write!</button></p>
+    <p>Current RFID Medium: <button id="read">Read!</button><button id="write">Write!</button></p>
+    <p>Media Type:
+        <select id="mediatype">
+            <option value="plain">Plain URI</option>
+            <option value="file">Local File</option>
+        </select>
+    </p>
+    <p>Media Data:<input type="text" id="mediadata" value=""></p>
 </p>
 
 </body>
