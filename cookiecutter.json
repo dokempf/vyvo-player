@@ -3,7 +3,6 @@
     "device": ["rc522", "None"],
     "power_switch": ["Simple", "None"],
     "youtube": ["Yes", "No"],
-    "soundcloud_token": "None",
     "production": ["Yes", "No"],
     "_extensions": [
         "installer.hostname"
