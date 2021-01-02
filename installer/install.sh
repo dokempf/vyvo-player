@@ -1,6 +1,4 @@
-{# This script is a mixture of regular bash with the Jinja2 templating language! -#}
-{# It is automatically split at each reboot command and a restart procedure after #}
-{# the reboot is added. This also adds the shebang - there is no need for one here#}
+#!/bin/bash
 
 {# TODO: Check for the pi/raspberry password combination and force the user to change #}
 {# https://stackoverflow.com/questions/18035093/given-a-linux-username-and-a-password-how-can-i-test-if-it-is-a-valid-account/18035305 #}
@@ -69,13 +67,6 @@ python3 -m pip install IPython pudb
 
 #TODO: Show WIRING.md here
 
-# Plenty of changes above require a reboot
+# Prepare installer restart after reboot and reboot
+echo "sudo ./installer/install_post_reboot.sh" >> ~/.bashrc
 reboot
-
-{% if cookiecutter.power_switch == "Simple" %}
-# If we enable this service before the button is properly connected, the
-# Pi will shutdown on all start-ups, which will be a proper nightmare for
-# users. We therefor only enable it, if the button is in place.
-/usr/local/sbin/gpio_if.sh 2 1 echo "WARNING: Your power switch seems to be wired wrongly. Manually run 'sudo systemctl enable powerswitch-sync' after fixing."
-/usr/local/sbin/gpio_if.sh 2 0 systemctl enable powerswitch-sync
-{% endif %}
